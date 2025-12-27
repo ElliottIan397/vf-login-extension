@@ -10,7 +10,10 @@ const loginExtension = {
     // This extension runs when VF emits a trace with this action name.
     match: ({ trace }) => {
         console.log("LOGIN EXTENSION TRACE:", trace);
-        return trace?.payload?.name === ACTION_NAME;
+        return (
+            trace?.type === "custom" &&
+            trace?.payload?.name === ACTION_NAME
+        );
     },
 
     render: ({ element }) => {
@@ -101,8 +104,8 @@ const loginExtension = {
             form.removeEventListener("submit", onSubmit);
         };
     },
-}   
+}
 
-    // Export to the global scope so your web chat snippet can register it
-    window.vfExtensions = window.vfExtensions || [];
-    window.vfExtensions.push(loginExtension);
+// Export to the global scope so your web chat snippet can register it
+window.vfExtensions = window.vfExtensions || [];
+window.vfExtensions.push(loginExtension);
