@@ -1,3 +1,5 @@
+console.log("🚨 LOGIN EXTENSION FILE EXECUTED");
+
 // ===== CONFIG =====
 const AUTH_URL = "https://YOUR_BACKEND/auth/login"; // <-- change this
 const ACTION_NAME = "login_form";                   // <-- must match VF Custom Action name
