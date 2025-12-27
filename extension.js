@@ -11,7 +11,7 @@ const loginExtension = {
     match: ({ trace }) => {
         console.log("LOGIN EXTENSION TRACE:", trace);
         return (
-            trace?.type === ACTION_NAME &&
+            trace?.type === ACTION_NAME ||
             trace?.payload?.name === ACTION_NAME
         );
     },
