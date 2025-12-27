@@ -8,13 +8,8 @@ const loginExtension = {
     type: "response",
 
     // This extension runs when VF emits a trace with this action name.
-    match: ({ trace }) => {
-        console.log("LOGIN EXTENSION TRACE:", trace);
-        return (
-            trace?.type === ACTION_NAME ||
-            trace?.payload?.name === ACTION_NAME
-        );
-    },
+    match: ({ trace }) => trace?.type === ACTION_NAME,
+
 
     render: ({ element }) => {
         // Create a container node (DO NOT write directly to element.innerHTML)
