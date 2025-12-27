@@ -8,7 +8,10 @@ const loginExtension = {
     type: "response",
 
     // This extension runs when VF emits a trace with this action name.
-    match: ({ trace }) => trace?.payload?.name === ACTION_NAME,
+    match: ({ trace }) => {
+        console.log("LOGIN EXTENSION TRACE:", trace);
+        return trace?.payload?.name === ACTION_NAME;
+    },
 
     render: ({ element }) => {
         // Build UI inside the chat bubble/container provided by VF
