@@ -1,53 +1,30 @@
 console.log("🚨 LOGIN EXTENSION FILE EXECUTED");
 
-// ===== CONFIG =====
-const AUTH_URL = "https://YOUR_BACKEND/auth/login"; // <-- change this
-const ACTION_NAME = "login_form";                   // <-- must match VF Custom Action name
+const AUTH_URL = "https://vf-nc-gateway.onrender.com/vf/login";
+const ACTION_NAME = "login_form";
 
-// ===== RESPONSE EXTENSION =====
 const loginExtension = {
     name: ACTION_NAME,
     type: "response",
 
-    // This extension runs when VF emits a trace with this action name.
-    match: ({ trace }) => {
-        console.log("🔥 TRACE SEEN:", trace);
-        return false;
-    },
+    match: ({ trace }) => trace?.type === ACTION_NAME,
 
     render: ({ element }) => {
-        // Create a container node (DO NOT write directly to element.innerHTML)
         const container = document.createElement("div");
 
         container.innerHTML = `
-    <div style="font-family:system-ui,sans-serif;padding:8px">
-      <form id="vfLoginForm">
-        <input
-          id="vfEmail"
-          type="email"
-          placeholder="Email"
-          required
-          style="width:100%;padding:8px;margin:0 0 8px 0"
-        />
-        <input
-          id="vfPassword"
-          type="password"
-          placeholder="Password"
-          required
-          style="width:100%;padding:8px;margin:0 0 8px 0"
-        />
-        <button type="submit" style="width:100%;padding:10px;cursor:pointer">
-          Log in
-        </button>
-        <div id="vfErr" style="color:#b00020;margin-top:6px"></div>
-      </form>
-    </div>
-  `;
+      <div style="font-family:system-ui,sans-serif;padding:8px">
+        <form id="vfLoginForm">
+          <input id="vfEmail" type="email" placeholder="Email" required style="width:100%;padding:8px;margin-bottom:8px" />
+          <input id="vfPassword" type="password" placeholder="Password" required style="width:100%;padding:8px;margin-bottom:8px" />
+          <button type="submit" style="width:100%;padding:10px">Log in</button>
+          <div id="vfErr" style="color:#b00020;margin-top:6px"></div>
+        </form>
+      </div>
+    `;
 
-        // Append into Voiceflow-managed element
         element.appendChild(container);
 
-        // Wire up handlers AFTER append
         const form = container.querySelector("#vfLoginForm");
         const err = container.querySelector("#vfErr");
         const emailEl = container.querySelector("#vfEmail");
@@ -61,33 +38,32 @@ const loginExtension = {
             btn.textContent = "Logging in...";
 
             try {
-                const email = emailEl.value.trim();
-                const password = passEl.value; // never log
-
                 const res = await fetch(AUTH_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    credentials: "omit",
-                    body: JSON.stringify({ email, password }),
+                    body: JSON.stringify({
+                        email: emailEl.value.trim(),
+                        password: passEl.value,
+                    }),
                 });
 
                 if (!res.ok) throw new Error("Login failed");
 
-                const { customerId, sessionToken } = await res.json();
+                const data = await res.json();
+                if (!data.sessionToken) throw new Error("No session token");
 
                 window.voiceflow.chat.setVariables({
                     isAuthenticated: true,
-                    customerId,
-                    sessionToken,
+                    sessionToken: data.sessionToken,
                 });
 
                 window.voiceflow.chat.send({
                     type: "event",
-                    payload: { name: "login_success" },
+                    payload: { name: "Response_Submitted" },
                 });
 
                 btn.textContent = "Logged in";
-            } catch (err2) {
+            } catch {
                 err.textContent = "Invalid email or password";
                 btn.disabled = false;
                 btn.textContent = "Log in";
@@ -98,13 +74,9 @@ const loginExtension = {
 
         form.addEventListener("submit", onSubmit);
 
-        // Cleanup hook (required)
-        return () => {
-            form.removeEventListener("submit", onSubmit);
-        };
+        return () => form.removeEventListener("submit", onSubmit);
     },
-}
+};
 
-// Export to the global scope so your web chat snippet can register it
 window.vfExtensions = window.vfExtensions || [];
 window.vfExtensions.push(loginExtension);
