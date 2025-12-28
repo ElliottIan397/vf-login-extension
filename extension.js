@@ -56,14 +56,12 @@ const loginExtension = {
 
                 if (!data.sessionToken) throw new Error("No session token");
 
-                window.voiceflow.chat.setVariables({
-                    isAuthenticated: true,
-                    sessionToken: data.sessionToken,
-                });
-
-                window.voiceflow.chat.send({
-                    type: "event",
-                    payload: { name: "Response_Submitted" },
+                window.voiceflow.chat.interact({
+                    type: "complete",
+                    payload: {
+                        isAuthenticated: true,
+                        sessionToken: data.sessionToken,
+                    },
                 });
 
                 loginBtn.textContent = "Logged in";
