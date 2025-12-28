@@ -32,24 +32,32 @@ const loginExtension = {
         const btn = form.querySelector("button");
 
         const onSubmit = async (e) => {
+            console.log("🟡 LOGIN SUBMIT HANDLER FIRED");
             e.preventDefault();
+
             err.textContent = "";
             btn.disabled = true;
             btn.textContent = "Logging in...";
+
+            const email = emailEl.value.trim();
+            const password = passEl.value;
+
+            console.log("🟡 ABOUT TO CALL AUTH", { email });
 
             try {
                 const res = await fetch(AUTH_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: emailEl.value.trim(),
-                        password: passEl.value,
-                    }),
+                    body: JSON.stringify({ email, password }),
                 });
+
+                console.log("🟢 FETCH RETURNED", res);
 
                 if (!res.ok) throw new Error("Login failed");
 
                 const data = await res.json();
+                console.log("🟢 AUTH RESPONSE", data);
+
                 if (!data.sessionToken) throw new Error("No session token");
 
                 window.voiceflow.chat.setVariables({
@@ -63,7 +71,8 @@ const loginExtension = {
                 });
 
                 btn.textContent = "Logged in";
-            } catch {
+            } catch (e) {
+                console.error("🔴 LOGIN ERROR", e);
                 err.textContent = "Invalid email or password";
                 btn.disabled = false;
                 btn.textContent = "Log in";
